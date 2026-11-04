@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Standart tema kodda: birinchi kirishda bo'sh ekran bo'lmasin.
+   Supabase'dagi faol tema shu qiymatlar ustidan qo'llanadi (useTheme). */
+
+@layer base {
+  :root {
+    --background: 60 9% 97%;
+    --foreground: 204 15% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 204 15% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 204 15% 9%;
+    --primary: 204 15% 9%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 90 4% 93%;
+    --secondary-foreground: 204 15% 9%;
+    --muted: 90 4% 93%;
+    --muted-foreground: 203 8% 39%;
+    --accent: 38 45% 61%;
+    --accent-foreground: 204 15% 9%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 165 5% 86%;
+    --input: 165 5% 86%;
+    --ring: 38 45% 61%;
+    --radius: 0.75rem;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-heading: 'Manrope', 'Inter', sans-serif;
+    --sidebar-background: 204 15% 9%;
+    --sidebar-foreground: 200 7% 67%;
+    --sidebar-primary: 38 45% 61%;
+    --sidebar-primary-foreground: 204 15% 9%;
+    --sidebar-accent: 203 13% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 203 13% 18%;
+    --sidebar-ring: 38 45% 61%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-warm {
+    background: linear-gradient(135deg, hsl(var(--warm-cream)) 0%, hsl(var(--warm-beige)) 100%);
+  }
+
+  .shadow-warm {
+    box-shadow: 0 4px 20px -4px hsl(var(--warm-brown) / 0.15);
+  }
+
+  .shadow-warm-lg {
+    box-shadow: 0 10px 40px -10px hsl(var(--warm-brown) / 0.2);
+  }
+
+}
+
+/* Animatsiyalar */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+

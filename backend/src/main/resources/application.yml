@@ -1,0 +1,54 @@
+server:
+  port: ${PORT:8080}
+  # nginx orqasida: haqiqiy mijoz IP'si X-Forwarded-For'dan olinadi
+  forward-headers-strategy: framework
+  error:
+    include-message: always
+  compression:
+    enabled: true
+    mime-types: application/json
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/chorrom}
+    username: ${DB_USER:chorrom}
+    password: ${DB_PASSWORD:chorrom}
+    hikari:
+      maximum-pool-size: 8
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 25MB
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  # JWT imzo kaliti (kamida 32 belgi). Production'da albatta env orqali beriladi.
+  jwt-secret: ${JWT_SECRET:dev-secret-change-me-dev-secret-change-me}
+  jwt-ttl-hours: ${JWT_TTL_HOURS:12}
+  # Yuklangan rasmlar papkasi va ularning ommaviy manzili
+  upload-dir: ${UPLOAD_DIR:./uploads}
+  upload-url: ${UPLOAD_URL:/uploads}
+  # Birinchi ishga tushishda (foydalanuvchi bo'lmasa) yaratiladigan admin
+  admin-email: ${ADMIN_EMAIL:}
+  admin-password: ${ADMIN_PASSWORD:}
+  # Telegram bot tokeni (bo'lsa admin paneldagidan ustun)
+  telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
+  # Brauzerdan boshqa domen orqali kirish kerak bo'lsa (masalan lokal dev: http://localhost:8080)
+  cors-origins: ${CORS_ORIGINS:}
+  # Eski Lovable/Supabase bazasidan ochiq ma'lumotni bir marta ko'chirish (bo'sh baza bo'lsa)
+  importer:
+    supabase-url: ${IMPORT_SUPABASE_URL:}
+    supabase-key: ${IMPORT_SUPABASE_KEY:}

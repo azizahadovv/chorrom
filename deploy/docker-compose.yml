@@ -1,0 +1,47 @@
+# CHORROM: PostgreSQL + Java API. Frontend (dist) host'dagi nginx tomonidan beriladi.
+# Serverda boshqa loyihalar ham bor: portlar faqat 127.0.0.1 da, xotira chegaralangan.
+name: chorrom
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chorrom
+      POSTGRES_USER: chorrom
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD .env da bo'lishi kerak}
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=30"]
+    volumes:
+      - ${DATA_DIR:-/srv/chorrom}/postgres:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chorrom -d chorrom"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ../backend
+    image: chorrom-api:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/chorrom
+      DB_USER: chorrom
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET .env da bo'lishi kerak (kamida 32 belgi)}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      UPLOAD_DIR: /data/uploads
+      UPLOAD_URL: /uploads
+      IMPORT_SUPABASE_URL: ${IMPORT_SUPABASE_URL:-}
+      IMPORT_SUPABASE_KEY: ${IMPORT_SUPABASE_KEY:-}
+    volumes:
+      # nginx /uploads/ ni shu papkadan to'g'ridan-to'g'ri beradi
+      - ${DATA_DIR:-/srv/chorrom}/uploads:/data/uploads
+    ports:
+      - "127.0.0.1:${API_PORT:-8090}:8080"
+    mem_limit: 768m

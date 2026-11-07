@@ -102,6 +102,10 @@
 /* configurator */
 .ch .cfg{background:var(--alab)}
 .ch .cfg .box{background:var(--white);border:1px solid var(--line);border-radius:24px;display:grid;grid-template-columns:200px 1fr 360px;overflow:hidden}
+.ch .cfg .box.no-types{grid-template-columns:1fr 360px}
+.ch .kinds{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.ch .kinds button{min-height:44px;padding:10px 18px;border:1.5px solid var(--line);border-radius:999px;background:var(--white);color:var(--ink);font:600 15px var(--font);cursor:pointer}
+.ch .kinds button[aria-pressed="true"]{background:var(--graphite);border-color:var(--graphite);color:var(--white)}
 .ch .cfg .types{padding:24px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
 .ch .cfg .types h4,.ch .opts h4,.ch .cfg .types h3,.ch .opts h3{font:700 14px var(--font);letter-spacing:0;margin-bottom:2px}
 .ch .tbtn{border:1.5px solid var(--line);background:var(--white);border-radius:12px;padding:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font:500 13px var(--font)}
@@ -214,7 +218,7 @@
   .ch nav.main,.ch .tel{display:none}
   .ch .hero .grid,.ch .trust .grid,.ch .fd .wrap,.ch .fin .wrap,.ch .ins,.ch .faq{grid-template-columns:1fr}
   .ch .cards{grid-template-columns:repeat(2,1fr)}
-  .ch .cfg .box{grid-template-columns:1fr}
+  .ch .cfg .box,.ch .cfg .box.no-types{grid-template-columns:1fr}
   .ch .cfg .types{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line)}
   .ch .opts{border-left:0;border-top:1px solid var(--line)}
   .ch .perks{grid-template-columns:1fr 1fr}
@@ -600,8 +604,8 @@ body{background:var(--paper)}
 .ch .rowi:hover h3{transform:translateX(10px)}
 
 /* chips, tabs, swatches, type buttons */
-.ch .tab,.ch .chip,.ch .tbtn,.ch .slots button,.ch .months button,.ch .pick button,.ch .seg button{transition:background-color var(--t-fast) ease,color var(--t-fast) ease,border-color var(--t-fast) ease,transform var(--t-fast) var(--ease)}
-.ch .tab:hover,.ch .tbtn:hover,.ch .slots button:hover,.ch .months button:hover{transform:translateY(-1px);border-color:var(--brass)}
+.ch .kinds button,.ch .tab,.ch .chip,.ch .tbtn,.ch .slots button,.ch .months button,.ch .pick button,.ch .seg button{transition:background-color var(--t-fast) ease,color var(--t-fast) ease,border-color var(--t-fast) ease,transform var(--t-fast) var(--ease)}
+.ch .kinds button:hover,.ch .tab:hover,.ch .tbtn:hover,.ch .slots button:hover,.ch .months button:hover{transform:translateY(-1px);border-color:var(--brass)}
 .ch .sws button{transition:transform .25s var(--ease),box-shadow .25s ease}
 .ch .sws button:hover{transform:scale(1.12)}
 .ch .filters label,.ch .checks label{transition:color var(--t-fast)}

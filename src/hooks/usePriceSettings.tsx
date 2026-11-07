@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchPrices } from '@/lib/rest';
-import { EMPTY_PRICE_CONFIG, type PriceConfig } from '@/lib/pricing';
+import { normalizePriceConfig, type PriceConfig } from '@/lib/pricing';
 import { getInitialData } from '@/lib/initialData';
+import { isHydrated } from '@/lib/hydration';
 
 export const PRICE_SETTINGS_KEY = ['price-settings'] as const;
 
@@ -14,12 +15,7 @@ export async function fetchPriceSettings(): Promise<PriceConfig | null> {
     return null;
   }
   if (!res?.data) return null;
-  const stored = res.data as Partial<PriceConfig>;
-  return {
-    ...EMPTY_PRICE_CONFIG,
-    ...stored,
-    installment: { ...EMPTY_PRICE_CONFIG.installment, ...(stored.installment ?? {}) },
-  };
+  return normalizePriceConfig(res.data);
 }
 
 export function usePriceSettings() {
@@ -27,8 +23,10 @@ export function usePriceSettings() {
   return useQuery({
     queryKey: PRICE_SETTINGS_KEY,
     queryFn: fetchPriceSettings,
-    // Build vaqtidagi qiymat bilan chiziladi va darhol yangilanadi
-    ...(init ? { initialData: init.prices, initialDataUpdatedAt: 0 } : {}),
+    // Build vaqtidagi qiymat bilan chiziladi, gidratsiyadan keyin yangilanadi (App'dagi whenHydrated)
+    ...(init
+      ? { initialData: () => (init.prices ? normalizePriceConfig(init.prices) : null), initialDataUpdatedAt: isHydrated() ? 0 : Date.now() }
+      : {}),
     // Build vaqtida jadval yo'q edi (migratsiya qo'llanmagan) — 404 so'rov yubormaymiz
     enabled: !(init && init.prices === null),
     staleTime: 5 * 60 * 1000,

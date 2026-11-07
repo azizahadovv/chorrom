@@ -78,7 +78,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         // /error — 400/404 kabi javoblar anonim so'rovda ham 401 ga aylanmasin
-                        .requestMatchers("/actuator/health", "/error", "/api/public/**", "/api/auth/login").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/health/readiness", "/error", "/api/public/**", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         // Jadval API'si: anonim faqat ochiq jadvallarni o'qiydi (TableRegistry tekshiradi)
                         .requestMatchers(HttpMethod.POST, "/api/db/*/select").permitAll()

@@ -1,55 +1,50 @@
 import { KPI_FIELDS, L, type ListDict, type TextDict } from '../types';
 
 export const texts: TextDict = {
-  'kalk.seo.title': L('Deraza narxi kalkulyatori — CHORROM, Buxoro', 'Калькулятор цены окон — CHORROM, Бухара'),
+  'kalk.seo.title': L('Narx kalkulyatori: deraza, eshik, surma, pergola — CHORROM, Buxoro', 'Калькулятор цены: окна, двери, раздвижные системы, перголы — CHORROM, Бухара'),
   'kalk.seo.description': L(
-    'Deraza narxini onlayn hisoblang: turi, oʻlchami, profil seriyasi, shisha paket va rangini tanlang. Bir nechta derazani bitta hisobga qoʻshing, oʻlchov bepul.',
-    'Рассчитайте цену окна онлайн: выберите тип, размеры, серию профиля, стеклопакет и цвет. Добавьте несколько окон в один расчёт, замер бесплатный.',
+    'Deraza, eshik, surma tizim, pergola, darvoza, dush kabinasi va setka narxini onlayn hisoblang. Bir nechta mahsulotni bitta hisobga qoʻshing, oʻlchov bepul.',
+    'Рассчитайте онлайн цену окна, двери, раздвижной системы, перголы, ворот, душевой кабины и сетки. Добавьте несколько изделий в один расчёт, замер бесплатный.',
   ),
 
   'kalk.head.title': L('Narx kalkulyatori', 'Калькулятор цены'),
   'kalk.head.lead': L(
-    'Derazangizni yigʻing: turini, oʻlchamini, profilini va rangini tanlang. Bir nechta derazani bitta hisobga qoʻshib, umumiy narxni va oylik toʻlovni koʻrasiz.',
-    'Соберите своё окно: выберите тип, размеры, профиль и цвет. Добавьте несколько окон в один расчёт и увидите общую цену и ежемесячный платёж.',
+    'Mahsulotni tanlang va sozlang: turini, oʻlchamini, modelini va rangini. Bir nechta mahsulotni bitta hisobga qoʻshib, umumiy narxni va oylik toʻlovni koʻrasiz.',
+    'Выберите и настройте изделие: тип, размеры, модель и цвет. Добавьте несколько изделий в один расчёт и увидите общую цену и ежемесячный платёж.',
   ),
 
   'kalk.preset.label': L('Katalogdan tanlangan:', 'Выбрано из каталога:'),
-  'kalk.preset.note': L('Profil seriyasi avtomatik qoʻyildi.', 'Серия профиля подставлена автоматически.'),
+  'kalk.preset.note': L('Mahsulot turi va modeli avtomatik qoʻyildi.', 'Тип изделия и модель подставлены автоматически.'),
 
-  'kalk.cfg.title': L('1. Derazani sozlang', '1. Настройте окно'),
-  'kalk.types.title': L('Deraza turi', 'Тип окна'),
-  'kalk.draw.aria': L('Tanlangan deraza chizmasi', 'Чертёж выбранного окна'),
-  'kalk.dims.width': L('Eni, mm', 'Ширина, мм'),
-  'kalk.dims.height': L('Boʻyi, mm', 'Высота, мм'),
+  'kalk.cfg.title': L('1. Mahsulotni tanlang va sozlang', '1. Выберите и настройте изделие'),
+  'kalk.draw.aria': L('Tanlangan mahsulot chizmasi', 'Чертёж выбранного изделия'),
   'kalk.unit.mm': L('mm', 'мм'),
+  'kalk.unit.m2': L('m²', 'м²'),
+  'kalk.unit.m': L('m', 'м'),
 
-  'kalk.opts.material': L('Profil turi', 'Тип профиля'),
-  'kalk.opts.series': L('Profil seriyasi', 'Серия профиля'),
-  'kalk.opts.glass': L('Shisha paket', 'Стеклопакет'),
-  'kalk.opts.furniture': L('Furnitura', 'Фурнитура'),
   'kalk.opts.lamination': L('Laminatsiya', 'Ламинация'),
   'kalk.opts.lamAria': L('Laminatsiya rangi', 'Цвет ламинации'),
   'kalk.opts.extras': L('Qoʻshimchalar', 'Дополнительно'),
   'kalk.opts.qty': L('Soni', 'Количество'),
   'kalk.qty.minus': L('Kamaytirish', 'Уменьшить'),
   'kalk.qty.plus': L('Koʻpaytirish', 'Увеличить'),
-  'kalk.add': L('Hisobga qoʻshib, yana deraza qoʻshish', 'Добавить в расчёт и настроить ещё окно'),
+  'kalk.add': L('Hisobga qoʻshib, yana qoʻshish', 'Добавить в расчёт и настроить ещё'),
 
-  'kalk.total.metaOne': L('joriy: {m2} m²', 'текущее: {m2} м²'),
-  'kalk.total.metaMulti': L('{n} ta pozitsiya, joriy: {m2} m²', 'позиций: {n}, текущее: {m2} м²'),
+  'kalk.total.metaOne': L('joriy: {m}', 'текущее: {m}'),
+  'kalk.total.metaMulti': L('{n} ta pozitsiya, joriy: {m}', 'позиций: {n}, текущее: {m}'),
+  'kalk.total.partial': L('Narxi kiritilmagan pozitsiya jami summaga kirmagan, uni menejer aytadi.', 'Позиция без цены не вошла в итог, её назовёт менеджер.'),
   'kalk.total.monthlyPre': L('{months} oyga boʻlib toʻlasangiz', 'В рассрочку на {months} мес. —'),
   'kalk.total.monthly': L('oyiga {sum} soʻm', '{sum} сум в месяц'),
   'kalk.total.send': L('Hisobni Telegramga yuborish', 'Отправить расчёт в Telegram'),
   'kalk.total.measure': L('Bepul oʻlchovga yozilish', 'Записаться на бесплатный замер'),
   'kalk.total.measureTopic': L('Shu hisob boʻyicha bepul oʻlchov', 'Бесплатный замер по этому расчёту'),
 
-  'kalk.items.title': L('2. Hisobdagi derazalar', '2. Окна в расчёте'),
+  'kalk.items.title': L('2. Hisobdagi mahsulotlar', '2. Изделия в расчёте'),
   'kalk.items.empty': L(
-    'Hozircha bitta deraza sozlanmoqda. Yana deraza kerak boʻlsa, “Hisobga qoʻshib, yana deraza qoʻshish” tugmasini bosing.',
-    'Пока настраивается одно окно. Если нужно ещё, нажмите «Добавить в расчёт и настроить ещё окно».',
+    'Hozircha bitta mahsulot sozlanmoqda. Yana kerak boʻlsa, “Hisobga qoʻshib, yana qoʻshish” tugmasini bosing.',
+    'Пока настраивается одно изделие. Если нужно ещё, нажмите «Добавить в расчёт и настроить ещё».',
   ),
-  'kalk.items.name': L('{type} deraza', '{type} окно'),
-  'kalk.items.desc': L('{w}×{h} mm, {series}, {lam}, {qty} dona', '{w}×{h} мм, {series}, {lam}, {qty} шт.'),
+  'kalk.items.qty': L('{qty} dona', '{qty} шт.'),
   'kalk.items.remove': L('Oʻchirish', 'Удалить'),
 
   'kalk.factors.title': L('Narxga nimalar ta’sir qiladi', 'Что влияет на цену'),

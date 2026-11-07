@@ -9,6 +9,7 @@ import App from './App.tsx';
 // Tailwind (index.css) faqat admin qismida yuklanadi: AdminLayout, Auth, tahrirlash vositalari
 import './styles/chorrom.css';
 import { getInitialData } from './lib/initialData';
+import { markHydrated } from './lib/hydration';
 
 const container = document.getElementById('root')!;
 const app = (
@@ -22,7 +23,10 @@ const app = (
 const data = getInitialData();
 if (container.hasChildNodes() && data?.route === window.location.pathname) {
   hydrateRoot(container, app);
+  // Odatda App ichidagi HydrationGate belgilaydi; bu — chunk yuklanmay qolgan holat uchun
+  setTimeout(markHydrated, 5000);
 } else {
+  markHydrated();
   container.innerHTML = '';
   createRoot(container).render(app);
 }

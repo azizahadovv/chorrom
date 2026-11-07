@@ -9,7 +9,8 @@ import { isFilled } from '@/content/placeholder';
 import { LeadButton } from './Lead';
 import { PhotoBox, T } from './Content';
 
-const calcHref = (p: CatalogProduct) => (p.calc ? `/kalkulyator#${p.id}` : '/kalkulyator');
+/** Kalkulyator mahsulotni taniydi: o'z turini ochadi va modelini oldindan tanlaydi. */
+const calcHref = (p: CatalogProduct) => `/kalkulyator#${p.id}`;
 
 function usePlaceName() {
   const { all, lang } = useList('katalog.places');

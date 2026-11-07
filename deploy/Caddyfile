@@ -1,0 +1,8 @@
+# HTTPS: sertifikatni Caddy o'zi oladi va yangilaydi. DNS A-yozuvlari shu serverga qaragan bo'lishi kerak.
+{$DOMAIN} {
+	reverse_proxy web:80
+}
+
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

@@ -33,6 +33,9 @@ management:
   endpoint:
     health:
       show-details: never
+      # /actuator/health/readiness: birinchi import tugagach UP bo'ladi (sahifalar to'liq ma'lumot bilan chizilishi uchun)
+      probes:
+        enabled: true
 
 app:
   # JWT imzo kaliti (kamida 32 belgi). Production'da albatta env orqali beriladi.

@@ -15,6 +15,7 @@ USER chorrom
 ENV UPLOAD_DIR=/data/uploads \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError"
 EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-  CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3"]
+# start-period katta: birinchi ishga tushishda eski bazadan rasmlar bilan import bo'ladi
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5m --retries=6 \
+  CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health/readiness HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3"]
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

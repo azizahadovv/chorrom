@@ -165,6 +165,8 @@ public class SupabaseImporter implements ApplicationRunner {
         j.update("UPDATE system_settings SET seo_title = 'CHORROM — deraza va eshiklar, Buxoro' "
                 + "WHERE seo_title IS NULL OR seo_title = '' OR seo_title ILIKE '%hashamatli%' OR seo_title ILIKE '%mebel%'");
         j.update("UPDATE system_settings SET primary_domain = 'https://chorrom.uz' WHERE primary_domain IS NULL OR primary_domain ILIKE '%lovable%'");
+        // Eski bazadagi favicon — yozuvli to'liq logotip (yorliqda o'qib bo'lmaydi): saytning o'z belgisi (/favicon.svg) qoladi
+        j.update("UPDATE system_settings SET favicon_url = NULL");
     }
 
     private String value(String key) {

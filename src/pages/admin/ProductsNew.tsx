@@ -200,7 +200,8 @@ export default function ProductsNew() {
   const { language } = useLanguage();
   const { all: places } = useList('katalog.places');
   const { data: priceCfg } = usePriceSettings();
-  const seriesOptions = priceCfg?.materials.find((m) => m.id === formData.calc_material)?.series ?? [];
+  const calcMaterials = (priceCfg?.kinds ?? []).flatMap((k) => k.materials.map((m) => ({ kind: k.label.uz, ...m })));
+  const seriesOptions = calcMaterials.find((m) => m.id === formData.calc_material)?.series ?? [];
 
   // Debounce search
   useEffect(() => {
@@ -1087,9 +1088,9 @@ export default function ProductsNew() {
                     onChange={(e) => setFormData({ ...formData, calc_material: e.target.value, calc_series: '' })}
                   >
                     <option value="">Bogʻlanmagan</option>
-                    {priceCfg?.materials.map((m) => (
+                    {calcMaterials.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {m.label.uz}
+                        {m.kind}: {m.label.uz}
                       </option>
                     ))}
                   </select>

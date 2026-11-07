@@ -4,6 +4,8 @@ import { fetchCatalogData } from '@/lib/rest';
 import { useLanguage } from '@/hooks/useLanguage';
 import { usePriceSettings } from '@/hooks/usePriceSettings';
 import { getInitialData } from '@/lib/initialData';
+import { seriesPrice } from '@/lib/pricing';
+import { isHydrated } from '@/lib/hydration';
 
 /** Katalog kartasi uchun tayyor mahsulot (products + categories + price_settings). */
 export interface CatalogProduct {
@@ -53,7 +55,8 @@ export function useCatalog() {
     queryKey: ['catalog'],
     queryFn: fetchCatalog,
     staleTime: 60 * 1000,
-    ...(init ? { initialData: init, initialDataUpdatedAt: 0 } : {}),
+    // Gidratsiyagacha yangi hisoblanadi (App'dagi whenHydrated yangilaydi), keyin ochilsa darhol so'raladi
+    ...(init ? { initialData: init, initialDataUpdatedAt: isHydrated() ? 0 : Date.now() } : {}),
   });
   const { data: prices } = usePriceSettings();
 
@@ -71,18 +74,27 @@ export function useCatalog() {
         if (!cat) return null;
         const material = str(p.calc_material);
         const series = str(p.calc_series);
-        const seriesPrice =
-          prices?.materials.find((m) => m.id === material)?.series.find((s) => s.id === series)?.price ?? 0;
+        const id = str(p.slug) || str(p.id);
+        const group = str(cat.slug);
+        // Mahsulot qo'lda bog'langan bo'lsa o'sha seriya, aks holda kalkulyatordagi o'z kategoriyasidagi shu slug'li model
+        const linkedPrice = prices
+          ? material && series
+            ? seriesPrice(prices, material, series)
+            : prices.kinds
+                .find((k) => k.categorySlug === group)
+                ?.materials.flatMap((m) => m.series)
+                .find((s) => s.id === id)?.price ?? 0
+          : 0;
         const ru = language === 'ru';
         return {
-          id: str(p.slug) || str(p.id),
-          group: str(cat.slug),
+          id,
+          group,
           groupName: str(ru ? cat.name_ru || cat.name_uz : cat.name_uz),
           brand: str(p.brand),
           name: str(ru ? p.name_ru || p.name_uz : p.name_uz),
           chips: ru && arr(p.chips_ru).length ? arr(p.chips_ru) : arr(p.chips_uz),
           place: str(p.place),
-          price: seriesPrice || Number(p.price) || 0,
+          price: linkedPrice || Number(p.price) || 0,
           calc: material && series ? { material, series } : null,
           image: arr(p.images)[0] ?? '',
           isFeatured: !!p.is_featured,

@@ -1,0 +1,16 @@
+# Frontend image konteksti: maxfiy fayllar va keraksiz og'ir papkalar kirmasin
+.git
+.env
+.env.*
+node_modules
+dist
+dist-ssr
+backend
+supabase
+design-reference
+design-v4
+*.zip
+*.log
+deploy/*
+!deploy/nginx.conf
+!deploy/Caddyfile

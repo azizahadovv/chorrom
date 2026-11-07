@@ -3,6 +3,7 @@ import { fetchContent as fetchPublicContent } from '@/lib/rest';
 import { db } from '@/lib/db';
 import { useToast } from './use-toast';
 import { getInitialData } from '@/lib/initialData';
+import { whenHydrated } from '@/lib/hydration';
 
 interface ContentItem {
   id: string;
@@ -91,9 +92,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    fetchContent();
-  }, [fetchContent]);
+  useEffect(() => whenHydrated(fetchContent), [fetchContent]);
 
   // Listen for messages from parent (when in iframe) or from iframe (when parent)
   useEffect(() => {

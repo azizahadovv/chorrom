@@ -1,39 +1,99 @@
 #!/usr/bin/env bash
-# CHORROM'ni serverda yangilash/ishga tushirish. Repo ildizidan ishga tushiring:  bash deploy/deploy.sh
-# 1) Baza + Java API (docker compose)  2) Frontend build (sahifalar API ma'lumoti bilan oldindan chiziladi)
-# 3) dist → WEB_ROOT (host nginx beradi)
+# CHORROM'ni serverga o'rnatish va yangilash. Bir xil buyruq:  bash deploy/deploy.sh
+# Serverda faqat Docker kerak. Birinchi marta deploy/.env ni o'zi yaratadi.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-ENV_FILE=deploy/.env
-[ -f "$ENV_FILE" ] || { echo "deploy/.env yo'q: deploy/.env.example dan nusxa olib to'ldiring"; exit 1; }
-set -a; . "$ENV_FILE"; set +a
-DATA_DIR=${DATA_DIR:-/srv/chorrom}
-API_PORT=${API_PORT:-8090}
-WEB_ROOT=${WEB_ROOT:-/var/www/chorrom}
+ENV_FILE=${ENV_FILE:-deploy/.env}
+PROJECT=${COMPOSE_PROJECT_NAME:-chorrom}
 
-echo "== Papkalar: $DATA_DIR"
-mkdir -p "$DATA_DIR/postgres" "$DATA_DIR/uploads" "$WEB_ROOT"
-# API konteyneri 10001 foydalanuvchisi nomidan rasmlarni yozadi
-chown -R 10001:10001 "$DATA_DIR/uploads"
+command -v docker >/dev/null || { echo "Docker o'rnatilmagan:  curl -fsSL https://get.docker.com | sh"; exit 1; }
+docker compose version >/dev/null || { echo "docker compose yo'q: Docker'ni yangilang"; exit 1; }
 
-echo "== Baza va API"
-docker compose -f deploy/docker-compose.yml --env-file "$ENV_FILE" up -d --build
+random_hex() { od -An -tx1 -N"$1" /dev/urandom | tr -d ' \n'; }
 
-echo "== API tayyor bo'lishini kutish"
-for i in $(seq 1 60); do
-  if curl -fsS "http://127.0.0.1:$API_PORT/actuator/health" | grep -q UP; then echo "API: UP"; break; fi
-  [ "$i" = 60 ] && { echo "API ishga tushmadi:"; docker compose -f deploy/docker-compose.yml logs --tail=80 api; exit 1; }
-  sleep 3
+# Bo'sh qiymatni tasodifiy parol bilan to'ldiradi
+fill_secret() {
+  local key=$1 bytes=$2
+  if grep -q "^$key=$" "$ENV_FILE"; then
+    sed -i "s/^$key=$/$key=$(random_hex "$bytes")/" "$ENV_FILE"
+  fi
+}
+
+if [ ! -f "$ENV_FILE" ]; then
+  cp deploy/.env.example "$ENV_FILE"
+  chmod 600 "$ENV_FILE"
+  echo "== $ENV_FILE yaratildi"
+  NEW_ENV=1
+fi
+fill_secret DB_PASSWORD 24
+fill_secret JWT_SECRET 32
+fill_secret ADMIN_PASSWORD 9
+
+set -a
+# shellcheck disable=SC1090
+. "$ENV_FILE"
+set +a
+DOMAIN=${DOMAIN:-chorrom.uz}
+WEB_PORT=${WEB_PORT:-8088}
+HTTPS_MODE=${HTTPS_MODE:-auto}
+
+port_busy() { ss -ltnH "sport = :$1" 2>/dev/null | grep -q .; }
+
+# Bizning caddy o'zi 80-portni band qilib turgan bo'lishi mumkin: bu "band" hisoblanmaydi
+caddy_running() { [ -n "$(docker ps -q --filter "label=com.docker.compose.project=$PROJECT" --filter "label=com.docker.compose.service=caddy")" ]; }
+
+if [ "$HTTPS_MODE" = auto ]; then
+  if caddy_running || ! { port_busy 80 || port_busy 443; }; then
+    HTTPS_MODE=caddy
+  else
+    HTTPS_MODE=host
+  fi
+fi
+
+COMPOSE=(docker compose -p "$PROJECT" -f deploy/docker-compose.yml --env-file "$ENV_FILE")
+
+echo "== Baza va API (birinchi marta import bilan bir necha daqiqa: rasmlar ko'chiriladi)"
+"${COMPOSE[@]}" up -d --build --wait --wait-timeout 1200 db api || {
+  "${COMPOSE[@]}" logs --tail=80 api
+  echo "API ishga tushmadi: yuqoridagi log"
+  exit 1
+}
+
+echo "== Sahifalarni chizish"
+"${COMPOSE[@]}" --profile build build builder
+"${COMPOSE[@]}" --profile build run --rm builder
+
+echo "== Sayt"
+if [ "$HTTPS_MODE" = caddy ]; then
+  "${COMPOSE[@]}" --profile https up -d --build --wait --wait-timeout 120 web caddy
+else
+  "${COMPOSE[@]}" up -d --build --wait --wait-timeout 120 web
+fi
+
+echo "== Tekshirish"
+for path in / /katalog /kalkulyator /api/public/settings; do
+  # curl ulana olmasa ham skript xabarsiz to'xtamasin: pastdagi xato va loglar chiqsin
+  code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "http://127.0.0.1:$WEB_PORT$path" || true)
+  echo "  $path → $code"
+  [ "$code" = 200 ] || { echo "Xato: $path javob bermadi"; "${COMPOSE[@]}" logs --tail=40 web api; exit 1; }
 done
 
-echo "== Frontend build (Node konteynerida)"
-docker run --rm --network host \
-  -v "$PWD":/app -w /app \
-  -e PRERENDER_API_URL="http://127.0.0.1:$API_PORT" \
-  node:20-bookworm-slim sh -c "npm ci --no-audit --no-fund && npm run build"
-
-echo "== Saytni joylash: $WEB_ROOT"
-rsync -a --delete dist/ "$WEB_ROOT"/
-
-echo "Tayyor. Tekshirish: curl -I http://127.0.0.1/ -H 'Host: chorrom.uz'"
+echo
+if [ "${NEW_ENV:-}" = 1 ]; then
+  echo "Admin paneli uchun (bir marta chiqadi, $ENV_FILE da ham bor):"
+  echo "  Email: $ADMIN_EMAIL"
+  echo "  Parol: $ADMIN_PASSWORD"
+  echo
+fi
+if [ "$HTTPS_MODE" = caddy ]; then
+  echo "Tayyor: https://$DOMAIN"
+  echo "DNS: $DOMAIN va www.$DOMAIN A-yozuvi shu serverga qarashi kerak. Sertifikat DNS tarqalgach o'zi olinadi."
+else
+  echo "Sayt ishlayapti: 127.0.0.1:$WEB_PORT. 80/443 band, shuning uchun HTTPS host'dagi nginx orqali:"
+  echo "  cp deploy/nginx-chorrom.conf /etc/nginx/sites-available/chorrom.conf"
+  echo "  ln -sf /etc/nginx/sites-available/chorrom.conf /etc/nginx/sites-enabled/chorrom.conf"
+  echo "  nginx -t && systemctl reload nginx"
+  echo "  certbot --nginx -d $DOMAIN -d www.$DOMAIN --redirect"
+  [ "$WEB_PORT" = 8088 ] || echo "  (nginx-chorrom.conf dagi 8088 ni $WEB_PORT ga almashtiring)"
+fi

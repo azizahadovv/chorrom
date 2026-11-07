@@ -1,8 +1,9 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { flushSync } from 'react-dom';
 import { Navigate, Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 import { createTransitionHistory } from '@/lib/motion';
+import { markHydrated, whenHydrated } from '@/lib/hydration';
 import { LanguageProvider } from '@/hooks/useLanguage';
 import { AuthProvider } from '@/hooks/useAuth';
 import { EditModeProvider } from '@/hooks/useEditMode';
@@ -13,6 +14,12 @@ import type { RolePermissions } from '@/lib/permissions';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { SiteLayout } from '@/components/site/SiteLayout';
 import Index from './pages/Index';
+
+/** Sahifa bilan bitta Suspense ichida: effekti sahifa gidratsiya bo'lib bo'lgach ishlaydi. */
+function HydrationGate() {
+  useEffect(markHydrated, []);
+  return null;
+}
 
 // Admin tahrirlash vositalari faqat tahrirlash huquqi bo'lgan foydalanuvchiga yuklanadi
 const AdminToolsChunk = lazy(() => import('@/components/AdminTools'));
@@ -71,6 +78,7 @@ export const createQueryClient = () =>
   });
 
 const queryClient = createQueryClient();
+whenHydrated(() => queryClient.invalidateQueries());
 
 // Admin qismi (ruxsat tekshiruvi, mavzular, tooltip) alohida chunk'da — mehmon uchun yuklanmaydi
 const ProtectedRoute = lazy(() => import('@/components/admin/ProtectedRoute').then((m) => ({ default: m.ProtectedRoute })));
@@ -133,6 +141,7 @@ export const AppTree = ({ Router, client }: { Router: RouterComponent; client: Q
                                     <Route path="/thank-you" element={<Navigate to="/" replace />} />
                                     <Route path="*" element={<NotFound />} />
                                   </Routes>
+                                  <HydrationGate />
                                 </Suspense>
                               </SiteLayout>
                               {/* Admin tahrirlash vositalari .ch uslublaridan tashqarida */}

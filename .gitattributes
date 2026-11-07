@@ -1,0 +1,5 @@
+# Linux serverda ishlaydi: Windows'dagi CRLF bash skriptlarni buzadi
+*.sh text eol=lf
+deploy/* text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf

@@ -1,5 +1,10 @@
-# CHORROM: PostgreSQL + Java API. Frontend (dist) host'dagi nginx tomonidan beriladi.
-# Serverda boshqa loyihalar ham bor: portlar faqat 127.0.0.1 da, xotira chegaralangan.
+# CHORROM: to'liq stek Docker'da. Ishga tushirish: bash deploy/deploy.sh (README.md)
+#   db      — PostgreSQL (port ochmaydi)
+#   api     — Java API (port ochmaydi, faqat web orqali)
+#   builder — bir martalik: sahifalarni API ma'lumoti bilan oldindan chizadi va web_dist'ga yozadi
+#   web     — nginx: sayt, /uploads, /api → api (127.0.0.1:WEB_PORT)
+#   caddy   — HTTPS (Let's Encrypt, 80/443). Faqat server bo'sh bo'lsa; 80-portda boshqa nginx bo'lsa kerak emas.
+# Serverda boshqa loyihalar bo'lishi mumkin: tashqi port faqat caddy'da, xotira chegaralangan.
 name: chorrom
 
 services:
@@ -12,7 +17,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD .env da bo'lishi kerak}
     command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=30"]
     volumes:
-      - ${DATA_DIR:-/srv/chorrom}/postgres:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U chorrom -d chorrom"]
@@ -40,8 +45,70 @@ services:
       IMPORT_SUPABASE_URL: ${IMPORT_SUPABASE_URL:-}
       IMPORT_SUPABASE_KEY: ${IMPORT_SUPABASE_KEY:-}
     volumes:
-      # nginx /uploads/ ni shu papkadan to'g'ridan-to'g'ri beradi
-      - ${DATA_DIR:-/srv/chorrom}/uploads:/data/uploads
-    ports:
-      - "127.0.0.1:${API_PORT:-8090}:8080"
+      - uploads:/data/uploads
+    # O'lchangan eng og'ir holat (import + 4 ta 12 MP rasm bir vaqtda): 577 MB
     mem_limit: 768m
+
+  builder:
+    profiles: ["build"]
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+      target: builder
+    image: chorrom-builder:latest
+    environment:
+      PRERENDER_API_URL: http://api:8080
+      NODE_OPTIONS: --max-old-space-size=1024
+    volumes:
+      - web_dist:/out
+    mem_limit: 1536m
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+      target: web
+    image: chorrom-web:latest
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    volumes:
+      - web_dist:/usr/share/nginx/html:ro
+      - uploads:/srv/uploads:ro
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8088}:80"
+    mem_limit: 64m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+  caddy:
+    profiles: ["https"]
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+      target: caddy
+    image: chorrom-caddy:latest
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      DOMAIN: ${DOMAIN:-chorrom.uz}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    mem_limit: 128m
+
+volumes:
+  pgdata:
+  uploads:
+  web_dist:
+  caddy_data:
+  caddy_config:
